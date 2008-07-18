@@ -359,7 +359,7 @@ def analyze_date(date):
 
 
 def help():
-	print "Scalp! the apache log - http://rgaucher.info/beta/scalp"
+	print "Scalp the apache log! - http://rgaucher.info/beta/scalp"
 	print "usage:  ./scalp.py [--log|-l log_file] [--filters|-f filter_file] [--period time-frame] [OPTIONS] [--attack a1,a2,..,an]"
 	print "   --log       |-l:  the apache log file './acess_log' by default"
 	print "   --filters   |-f:  the filter file     './default_filter.xml' by default"
@@ -395,7 +395,7 @@ def main(argc, argv):
 		'output'     : ""
 	}
 
-	if argc not in (1,2,3,5) or sys.argv[1] == "--help":
+	if argc not in (2,3,5) or sys.argv[1] == "--help":
 		help()
 		sys.exit(0)
 	else:	
