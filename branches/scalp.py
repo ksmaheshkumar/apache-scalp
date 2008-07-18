@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 	Scalp! Apache log based attack analyzer
-	by Romain Gaucher - r@rgaucher.info - http://code.google.com/p/scalp
+	by Romain Gaucher - r@rgaucher.info - http://rgaucher.info
+	                                      http://code.google.com/p/apache-scalp
 	
 	
   Copyright (c) 2008 Romain Gaucher <r@rgaucher.info>
@@ -51,13 +52,13 @@ table = {}
 
 txt_header = """
 #
-# File created by Scalp! by Romain Gaucher - http://rgaucher.info/beta/scalp
+# File created by Scalp! by Romain Gaucher - http://code.google.com/p/apache-scalp
 # Apache log attack analysis tool based on PHP-IDS filters
 #
 """
 
 xml_header = """<!-- 
- File created by Scalp! by Romain Gaucher - http://rgaucher.info/beta/scalp
+ File created by Scalp! by Romain Gaucher - http://code.google.com/p/apache-scalp
  Apache log attack analysis tool based on PHP-IDS filters
 -->
 <?xml version="1.0" encoding="utf-8"?>
