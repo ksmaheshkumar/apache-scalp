@@ -361,7 +361,7 @@ def analyze_date(date):
 def help():
 	print "Scalp the apache log! - http://rgaucher.info/beta/scalp"
 	print "usage:  ./scalp.py [--log|-l log_file] [--filters|-f filter_file] [--period time-frame] [OPTIONS] [--attack a1,a2,..,an]"
-	print "   --log       |-l:  the apache log file './acess_log' by default"
+	print "   --log       |-l:  the apache log file './access_log' by default"
 	print "   --filters   |-f:  the filter file     './default_filter.xml' by default"
 	print "   --exhaustive|-e:  will report all type of attacks detected and not stop"
 	print "                     at the first found"
