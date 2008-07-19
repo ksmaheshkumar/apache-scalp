@@ -47,7 +47,7 @@ names = {
 	'lfi'  : 'Local File Inclusion'
 }
 
-c_reg = re.compile(r'^(.+)-(.*)\[(.+)-(\d+)\] "([A-Z]+)?(.*) HTTP/\d.\d" (\d{3})(\s\d{3})?(\s"(.+)" )?(.*)$')
+c_reg = re.compile(r'^(.+)-(.*)\[(.+)[-|+](\d+)\] "([A-Z]+)?(.+) HTTP/\d.\d" (\d+)(\s[\d]+)?(\s"(.+)" )?(.*)$')
 table = {}
 
 txt_header = """
@@ -222,9 +222,9 @@ def scalper(access, filters, preferences = [], output = "text"):
 					analyzer([(ip,name,date,ext,method,url,response,byte,referrer,agent),regs,flag, preferences, line])
 			elif preferences['except']:
 				diff.append(line)
+
 			if nb_lines > 0 and lines > nb_lines:
 				break
-
 	tt = time.time() - start
 	n = 0
 	for t in flag:
@@ -395,7 +395,7 @@ def main(argc, argv):
 		'output'     : ""
 	}
 
-	if argc not in (2,3,5) or sys.argv[1] == "--help":
+	if argc < 2 or sys.argv[1] == "--help":
 		help()
 		sys.exit(0)
 	else:	
