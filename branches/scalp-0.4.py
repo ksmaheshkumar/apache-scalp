@@ -311,7 +311,7 @@ def scalper(access, filters, preferences = [], output = "text"):
 	
 	print "Processing the file '%s'..." % access
 	
-	loc, lines, nb_lines = 0, 0, 1000
+	loc, lines, nb_lines = 0, 0, 0
 	old_diff = 0
 	start = time.time()
 	diff = []
@@ -339,28 +339,35 @@ def scalper(access, filters, preferences = [], output = "text"):
 			elif preferences['except']:
 				diff.append(line)
 
+			# mainly testing purposes...
 			if nb_lines > 0 and lines > nb_lines:
 				break
+
 	tt = time.time() - start
 	n = 0
 	for t in flag:
 		for i in flag[t]:
 			n += len(flag[t][i])
+	print "Scalp results:"
 	print "\tProcessed %d lines over %d" % (loc,lines)
 	print "\tFound %d attack patterns in %f s" % (n,tt)
 
+
+	short_name = access[access.rfind(os.sep)+1:]
+
 	print "Generating output..."
 	if 'html' in preferences['output']:
-		generate_html_file(flag, access, filters)
+		generate_html_file(flag, short_name, filters, preferences['odir'])
 	elif 'text' in preferences['output']:
-		generate_text_file(flag, access, filters)
+		generate_text_file(flag, short_name, filters, preferences['odir'])
 	elif 'xml' in preferences['output']:
-		generate_xml_file(flag, access, filters)
+		generate_xml_file(flag, short_name, filters, preferences['odir'])
 
 
-def generate_text_file(flag, access, filters):
+def generate_text_file(flag, access, filters, odir):
 	curtime = time.strftime("%a-%d-%b-%Y", time.localtime())
 	fname = '%s_scalp_%s.txt' % (access,  curtime)
+	fname = os.path.abspath(odir + os.sep + fname)
 	try:
 		out = open(fname, 'w')
 		out.write(txt_header)
@@ -379,16 +386,16 @@ def generate_text_file(flag, access, filters):
 				for e in flag[attack_type][i]:
 					out.write("\t%s" % e[3])
 					out.write("\tReason: \"%s\"\n\n" % e[2])
-		out.close()		
+		out.close()
 	except IOError:
 		print "Cannot open the file:", fname
 	return
 
 
-def generate_xml_file(flag, access, filters):
+def generate_xml_file(flag, access, filters, odir):
 	curtime = time.strftime("%a-%d-%b-%Y", time.localtime())
 	fname = '%s_scalp_%s.xml' % (access,  curtime)
-	
+	fname = os.path.abspath(odir + os.sep + fname)
 	try:
 		out = open(fname, 'w')
 		out.write(xml_header)
@@ -416,9 +423,10 @@ def generate_xml_file(flag, access, filters):
 	return
 	return
 
-def generate_html_file(flag, access, filters):
+def generate_html_file(flag, access, filters, odir):
 	curtime = time.strftime("%a-%d-%b-%Y", time.localtime())
 	fname = '%s_scalp_%s.html' % (access,  curtime)
+	fname = os.path.abspath(odir + os.sep + fname)
 	try:
 		out = open(fname, 'w')
 		out.write(html_header)
@@ -527,7 +535,9 @@ def help():
 	print "   --attack    |-a:  specify the list of attacks to look for"
 	print "                     list: xss, sqli, csrf, dos, dt, spam, id, ref, lfi"
 	print "                     the list of attacks should not contains spaces and comma separated"
-	print "                     ex: xss,sqli,lfi,ref" 
+	print "                     ex: xss,sqli,lfi,ref"
+	print "   --output    |-o:  specifying the output directory; by default, scalp will try to write"
+	print "                     in the same directory as the log file"
 
 
 def main(argc, argv):
@@ -543,7 +553,8 @@ def main(argc, argv):
 		'except'     : False, 
 		'exhaustive' : False,
 		'encodings'  : False,
-		'output'     : ""
+		'output'     : "",
+		'odir'       : os.path.abspath(os.curdir)
 	}
 
 	if argc < 2 or sys.argv[1] == "--help":
@@ -557,6 +568,8 @@ def main(argc, argv):
 					filters = argv[i+1]
 				elif s in ("--log","-l"):
 					access = argv[i+1]
+				elif s in ("--output", "-o"):
+					preferences['odir'] = argv[i+1]
 				elif s in ("--period", "-p"):
 					preferences['period'] = analyze_date(argv[i+1])
 				elif s in ("--exhaustive", "-e"):
@@ -578,6 +591,15 @@ def main(argc, argv):
 				print "argument error, '%s' has been ignored" % s
 		if len(preferences['output']) < 1:
 			preferences['output'] = "text"
+		if not os.path.isdir(preferences['odir']):
+			print "The directory %s doesn't exist, scalp will try to create it"
+			try:
+				os.mkdir(preferences['odir'])
+			except:
+				print "/!\ scalp cannot write in",preferences['odir']
+				print "/!\ Ising /tmp/scalp/ as new directory..."
+				preferences['odir'] = '/tmp/scalp'
+				os.mkdir(preferences['odir'])
 		scalper(access, filters, preferences)
 
 if __name__ == "__main__":
