@@ -3,16 +3,16 @@
 	Scalp! Apache log based attack analyzer
 	by Romain Gaucher <r@rgaucher.info> - http://rgaucher.info
 	                                      http://code.google.com/p/apache-scalp
-	
-	
+
+
 	Copyright (c) 2008 Romain Gaucher <r@rgaucher.info>
-	
+
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
 	You may obtain a copy of the License at
-	
+
 		http://www.apache.org/licenses/LICENSE-2.0
-				
+
 	Unless required by applicable law or agreed to in writing, software
 	distributed under the License is distributed on an "AS IS" BASIS,
 	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,7 +61,7 @@ txt_header = """
 #
 """
 
-xml_header = """<!-- 
+xml_header = """<!--
  File created by Scalp! by Romain Gaucher - http://code.google.com/p/apache-scalp
  Apache log attack analysis tool based on PHP-IDS filters
 -->
@@ -117,11 +117,11 @@ def __parse_node(node):
 			continue
 		old = tmp[cht]
 		if not isinstance(old, list):
-			tmp.pop(cht)   
-			tmp[cht] = [old] # multi times, so change old dict to a list	   
+			tmp.pop(cht)
+			tmp[cht] = [old] # multi times, so change old dict to a list
 		tmp[cht].append(chp) # add the new one
 	return	tmp
-	
+
 def parse(xml_file):
 	try:
 		xml_handler = open(xml_file, 'r')
@@ -131,7 +131,7 @@ def parse(xml_file):
 	except IOError:
 		print "error: problem with the filter's file"
 		return {}
-	
+
 def get_value(array, default):
 	if 'value' in array:
 		return array['value']
@@ -220,7 +220,7 @@ def fill_replace_dict():
 	re_replace = re.compile("(%s)" % "|".join(map(re.escape, d_replace.keys())))
 
 
-def multiple_replace(text): 	
+def multiple_replace(text):
 	return re_replace.sub(lambda mo: d_replace[mo.string[mo.start():mo.end()]], text)
 
 # the decode engine tries to detect then decode...
@@ -270,7 +270,7 @@ def scalper(access, filters, preferences = [], output = "text"):
 		return
 	# prepare to load the compiled regular expression
 	regs = {} # type => (reg.compiled, impact, description, rule)
-	
+
 	print "Loading XML file '%s'..." % filters
 	for group in xml_filters:
 		for f in xml_filters[group]:
@@ -307,9 +307,9 @@ def scalper(access, filters, preferences = [], output = "text"):
 	if len(preferences['attack_type']) < 1:
 		preferences['attack_type'] = regs.keys()
 	flag = {} # {type => { impact => ({log_line dict}, rule, description, org_line) }}
-	
+
 	print "Processing the file '%s'..." % access
-	
+
 	sample, sampled_lines = False, []
 	if preferences['sample'] != float(100):
 		# get the number of lines
@@ -319,7 +319,7 @@ def scalper(access, filters, preferences = [], output = "text"):
 		random.seed(time.clock())
 		sampled_lines = random.sample(range(total_nb_lines), int(float(total_nb_lines) * preferences['sample'] / float(100)))
 		sampled_lines.sort()
-	
+
 	loc, lines, nb_lines = 0, 0, 0
 	old_diff = 0
 	start = time.time()
@@ -343,7 +343,7 @@ def scalper(access, filters, preferences = [], output = "text"):
 				agent = out.group(10)
 
 				if not correct_period(date, preferences['period']):
-					continue	
+					continue
 				loc += 1
 				if len(url) > 1 and method in ('GET','POST','HEAD','PUT','PUSH','OPTIONS'):
 					analyzer([(ip,name,date,ext,method,url,response,byte,referrer,agent),regs,flag, preferences, line])
@@ -372,7 +372,7 @@ def scalper(access, filters, preferences = [], output = "text"):
 		generate_text_file(flag, short_name, filters, preferences['odir'])
 	elif 'xml' in preferences['output']:
 		generate_xml_file(flag, short_name, filters, preferences['odir'])
-		
+
 	# generate exceptions
 	if len(diff) > 0:
 		o_except = open(os.path.abspath(preferences['odir'] + os.sep + "scalp_except.txt"), "w")
@@ -397,7 +397,7 @@ def generate_text_file(flag, access, filters, odir):
 				out.write("Attack type: %s\n" % attack_type)
 			impacts = flag[attack_type].keys()
 			impacts.sort(reverse=True)
-			
+
 			for i in impacts:
 				out.write("\n\t### Impact %d\n" % int(i))
 				for e in flag[attack_type][i]:
@@ -421,7 +421,7 @@ def generate_xml_file(flag, access, filters, odir):
 			name = ""
 			if attack_type in names:
 				name = " name=\"%s\"" % names[attack_type]
-			out.write("  <attack type=\"%s\"%s>\n" % (attack_type, name))				
+			out.write("  <attack type=\"%s\"%s>\n" % (attack_type, name))
 			impacts = flag[attack_type].keys()
 			impacts.sort(reverse=True)
 			for i in impacts:
@@ -432,9 +432,9 @@ def generate_xml_file(flag, access, filters, odir):
 					out.write("        <line><![CDATA[%s]]></line>\n" % e[3])
 					out.write("      </item>\n")
 				out.write("    </impact>\n")
-			out.write("  </attack>\n")	
+			out.write("  </attack>\n")
 		out.write("</scalp>")
-		out.close()		
+		out.close()
 	except IOError:
 		print "Cannot open the file:", fname
 	return
@@ -454,7 +454,7 @@ def generate_html_file(flag, access, filters, odir):
 				name = "%s" % names[attack_type]
 			if len(flag[attack_type].values()) < 1:
 				continue
-			out.write("  <h2>%s (%s)</h2>\n" % (attack_type, name))				
+			out.write("  <h2>%s (%s)</h2>\n" % (attack_type, name))
 			impacts = flag[attack_type].keys()
 			impacts.sort(reverse=True)
 			# order by impact
@@ -469,9 +469,9 @@ def generate_html_file(flag, access, filters, odir):
 					out.write("  <span class='regexp'><b>Matching Regexp:</b>%s</span>\n" % html_entities(e[1]))
 					out.write(" </div>\n")
 				out.write("</div>\n")
-			out.write("<br />\n")	
+			out.write("<br />\n")
 		out.write(html_footer)
-		out.close()		
+		out.close()
 	except IOError:
 		print "Cannot open the file:", fname
 	return
@@ -497,10 +497,10 @@ def correct_period(date, period):
 
 def analyze_date(date):
 	"""04/Apr/2008:15:45;*/May/2008"""
-	
+
 	d_min = [01, 00, 0000, 00, 00, 00]
 	d_max = [31, 11, 9999, 24, 59, 59]
-	
+
 	date   = date.replace(':', '/')
 	l_date = date.split(';')
 	l_start= l_date[0].split('/')
@@ -508,7 +508,7 @@ def analyze_date(date):
 
 	v_start = [01, 00, 0000, 00, 00, 00]
 	v_end   = [31, 11, 9999, 24, 59, 59]
-	
+
 	for i in range(len(l_start)):
 		if l_start[i] == '*': continue
 		else:
@@ -542,7 +542,7 @@ def help():
 	print "   --tough     |-u:  try to decode the potential attack vectors (may increase"
 	print "                     the examination time)"
 	print "   --period    |-p:  the period must be specified in the same format as in"
-	print "                     the Apache logs using * as wild-card" 
+	print "                     the Apache logs using * as wild-card"
 	print "                     ex: 04/Apr/2008:15:45;*/Mai/2008"
 	print "                     if not specified at the end, the max or min are taken"
 	print "   --html      |-h:  generate an HTML output"
@@ -564,12 +564,12 @@ def main(argc, argv):
 	access  = "access_log"
 	output  = ""
 	preferences = {
-		'attack_type' : [], 
-		'period' : { 
+		'attack_type' : [],
+		'period' : {
 			'start' : [01, 00, 0000, 00, 00, 00],# day, month, year, hour, minute, second
 			'end'   : [31, 11, 9999, 24, 59, 59]
-		}, 
-		'except'     : False, 
+		},
+		'except'     : False,
 		'exhaustive' : False,
 		'encodings'  : False,
 		'output'     : "",
@@ -580,7 +580,7 @@ def main(argc, argv):
 	if argc < 2 or sys.argv[1] == "--help":
 		help()
 		sys.exit(0)
-	else:	
+	else:
 		for i in range(argc):
 			s = argv[i]
 			if i < argc:
