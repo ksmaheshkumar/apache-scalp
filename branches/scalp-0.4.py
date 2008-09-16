@@ -21,7 +21,7 @@
 """
 from __future__ import with_statement
 import time, base64
-import os,sys,re
+import os,sys,re,random
 from StringIO import StringIO
 try:
 	from lxml import etree
@@ -272,7 +272,6 @@ def scalper(access, filters, preferences = [], output = "text"):
 	regs = {} # type => (reg.compiled, impact, description, rule)
 	
 	print "Loading XML file '%s'..." % filters
-	
 	for group in xml_filters:
 		for f in xml_filters[group]:
 			if f == 'filter':
@@ -311,6 +310,16 @@ def scalper(access, filters, preferences = [], output = "text"):
 	
 	print "Processing the file '%s'..." % access
 	
+	sample, sampled_lines = False, []
+	if preferences['sample'] != float(100):
+		# get the number of lines
+		sample = True
+		total_nb_lines = sum(1 for line in open(access))
+		# take a random sample
+		random.seed(time.clock())
+		sampled_lines = random.sample(range(total_nb_lines), int(float(total_nb_lines) * preferences['sample'] / float(100)))
+		sampled_lines.sort()
+	
 	loc, lines, nb_lines = 0, 0, 0
 	old_diff = 0
 	start = time.time()
@@ -318,6 +327,8 @@ def scalper(access, filters, preferences = [], output = "text"):
 	with open(access) as log_file:
 		for line in log_file:
 			lines += 1
+			if sample and lines not in sampled_lines:
+				continue
 			if c_reg.match(line):
 				out = c_reg.search(line)
 				ip = out.group(1)
@@ -352,7 +363,6 @@ def scalper(access, filters, preferences = [], output = "text"):
 	print "\tProcessed %d lines over %d" % (loc,lines)
 	print "\tFound %d attack patterns in %f s" % (n,tt)
 
-
 	short_name = access[access.rfind(os.sep)+1:]
 
 	print "Generating output..."
@@ -362,6 +372,13 @@ def scalper(access, filters, preferences = [], output = "text"):
 		generate_text_file(flag, short_name, filters, preferences['odir'])
 	elif 'xml' in preferences['output']:
 		generate_xml_file(flag, short_name, filters, preferences['odir'])
+		
+	# generate exceptions
+	if len(diff) > 0:
+		o_except = open(os.path.abspath(preferences['odir'] + os.sep + "scalp_except.txt"), "w")
+		for l in diff:
+			o_except.write(l + '\n')
+		o_except.close()
 
 
 def generate_text_file(flag, access, filters, odir):
@@ -517,6 +534,7 @@ def analyze_date(date):
 def help():
 	print "Scalp the apache log! by Romain Gaucher - http://rgaucher.info"
 	print "usage:  ./scalp.py [--log|-l log_file] [--filters|-f filter_file] [--period time-frame] [OPTIONS] [--attack a1,a2,..,an]"
+	print "                   [--sample|-s 4.2]"
 	print "   --log       |-l:  the apache log file './access_log' by default"
 	print "   --filters   |-f:  the filter file     './default_filter.xml' by default"
 	print "   --exhaustive|-e:  will report all type of attacks detected and not stop"
@@ -538,7 +556,8 @@ def help():
 	print "                     ex: xss,sqli,lfi,ref"
 	print "   --output    |-o:  specifying the output directory; by default, scalp will try to write"
 	print "                     in the same directory as the log file"
-
+	print "   --sample    |-s:  use a random sample of the lines, the number (float in [0,100]) is"
+	print "                     the percentage, ex: --sample 0.1 for 1/1000"
 
 def main(argc, argv):
 	filters = "default_filter.xml"
@@ -554,7 +573,8 @@ def main(argc, argv):
 		'exhaustive' : False,
 		'encodings'  : False,
 		'output'     : "",
-		'odir'       : os.path.abspath(os.curdir)
+		'odir'       : os.path.abspath(os.curdir),
+		'sample'     : float(100)
 	}
 
 	if argc < 2 or sys.argv[1] == "--help":
@@ -570,6 +590,12 @@ def main(argc, argv):
 					access = argv[i+1]
 				elif s in ("--output", "-o"):
 					preferences['odir'] = argv[i+1]
+				elif s in ("--sample", "-s"):
+					try:
+						preferences['sample'] = float(argv[i+1])
+					except:
+						preferences['sample'] = float(4.2)
+						print "/!\ Error in the sample size, will be 4.2%"
 				elif s in ("--period", "-p"):
 					preferences['period'] = analyze_date(argv[i+1])
 				elif s in ("--exhaustive", "-e"):
