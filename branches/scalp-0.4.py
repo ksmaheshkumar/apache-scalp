@@ -259,6 +259,7 @@ def scalper(access, filters, preferences = [], output = "text"):
 		return
 	if not os.path.isfile(filters):
 		print "error: the filters file (XML) doesn't exist"
+		print "please download it at https://svn.php-ids.org/svn/trunk/lib/IDS/default_filter.xml"
 		return
 	if output not in ('html', 'text', 'xml'):
 		print "error: the output format '%s' hasn't been recognized" % output
@@ -364,14 +365,14 @@ def scalper(access, filters, preferences = [], output = "text"):
 	print "\tFound %d attack patterns in %f s" % (n,tt)
 
 	short_name = access[access.rfind(os.sep)+1:]
-
-	print "Generating output..."
-	if 'html' in preferences['output']:
-		generate_html_file(flag, short_name, filters, preferences['odir'])
-	elif 'text' in preferences['output']:
-		generate_text_file(flag, short_name, filters, preferences['odir'])
-	elif 'xml' in preferences['output']:
-		generate_xml_file(flag, short_name, filters, preferences['odir'])
+	if n > 0:
+		print "Generating output in %s%s%s_scalp_*" % (preferences['odir'],os.sep,short_name)
+		if 'html' in preferences['output']:
+			generate_html_file(flag, short_name, filters, preferences['odir'])
+		elif 'text' in preferences['output']:
+			generate_text_file(flag, short_name, filters, preferences['odir'])
+		elif 'xml' in preferences['output']:
+			generate_xml_file(flag, short_name, filters, preferences['odir'])
 
 	# generate exceptions
 	if len(diff) > 0:
