@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 """
-File: xml_test_scalp.py
+File: sexr.py
 Author: Don C. Weber
 Start Date: 10052008
-Purpose: Parse Scalp XML Output for reporting statistics
+Purpose: Scalp External XML Reporter parses Scalp XML files and output
+alert information, statistics, and detected IP addresses
 
 Copyright 2008 Don C. Weber <cutaway@cutawaysecurity.com>
 
@@ -16,6 +17,10 @@ Creative Commons, 171 Second Street, Suite 300, San Francisco, California,
 
 
 Last Mod: 12292008
+Mods:
+    12292008 - Removed some residual debugging messages.
+
+
 Notes:
     No official DTD for Scalp XML scheme provided.
     DTD for Scalp XML scheme. NOTE: First time I have done this so it may or may not be correct.
@@ -314,7 +319,6 @@ def main():
     _scan = "full"      # Default
     dnow = datetime.datetime.utcnow()
     fnow = "%s.%s" % (dnow.date(), dnow.time())
-    print "fnow: %s" % fnow
     fdtd = "scalp_xmldtd.dtd"           # Default DTD file for validation
     vdtd = ""
     xdtd = ""
@@ -456,18 +460,4 @@ def main():
 if __name__ == '__main__':
 
     # Function where all the work is done
-    #main(sys.argv[1:])
     main()
-
-    ###################
-    # Kept for legacy purposes to remember some of the things I did
-    ###################
-    #print "p_scalp.root = %s : len_p_scalp = %s" % (p_scalp.tag,str(len_p_scalp))
-    #for ch_scalp in p_scalp:
-    #    print "    Child: %s" % ch_scalp.tag
-    #    attributes = ch_scalp.attrib
-    #    print "        Attribs = %s : Len_Attribs = %s" % (attributes,str(len(attributes)))
-    #    print "        Children = %s" % str(len(ch_scalp))
-    #    for key in ch_scalp.keys():
-    #        print "        key = %s : value = %s" % (key, ch_scalp.get(key))
-    ###################
